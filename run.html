@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CyanOS [v0]</title>
+    <script src="https://cdn.jsdelivr.net/npm/v86@0.5.424/build/libv86.js"></script>
+    <style>
+        html, body, #screen {margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000;}
+        #screen {position: fixed; inset: 0;}
+        #screen div {white-space: pre; font: 700 22px Arial, sans-serif !important; color: #999;}
+        canvas {display: block !important; width: 100% !important; height: 100% !important; image-rendering: pixelated;}
+    </style>
+</head>
+<body>
+    <div id="screen" tabindex="0">
+        <div></div>
+        <canvas></canvas>
+    </div>
+
+    <input id="load" type="file" accept=".bin" style="display:none">
+    <input id="floppy" type="file" accept=".img" style="display:none">
+
+    <script>
+        const s = document.getElementById("screen");
+        const text = s.querySelector("div");
+
+        let emulator;
+
+        function progress(percent) {
+            const width = 40;
+            const filled = Math.round(percent / 100 * width);
+            text.textContent = `Downloading CyanOS... [${"█".repeat(filled)}${"░".repeat(width - filled)}] ${Math.round(percent)}%`;
+        }
+
+        progress(0);
+
+        fetch("cyanos1/cyanos-demo.img")
+            .then(response => {
+                const total = Number(response.headers.get("Content-Length")) || (8 * 1024 * 1024);
+                const reader = response.body.getReader();
+                const chunks = [];
+                let received = 0;
+
+                function read() {
+                    return reader.read().then(({done, value}) => {
+                        if (done) {
+                            progress(100);
+                            return new Blob(chunks).arrayBuffer();
+                        }
+
+                        chunks.push(value);
+                        received += value.length;
+                        progress(received / total * 100);
+                        return read();
+                    });
+                }
+
+                return read();
+            })
+            .then(buffer => {
+                emulator = new V86({
+                    wasm_path: "v86.wasm",
+                    memory_size: 512 * 1024 * 1024,
+                    vga_memory_size: 8 * 1024 * 1024,
+                    screen_container: s,
+                    bios: {url: "bios/seabios.bin"},
+                    vga_bios: {url: "bios/vgabios.bin"},
+                    hda: {buffer},
+                    autostart: true
+                });
+            });
+
+        document.addEventListener("keydown", async (e) => {
+            if (e.ctrlKey && e.shiftKey && e.code === "KeyS") {
+                e.preventDefault();
+                if (!emulator) return;
+                const state = await emulator.save_state();
+                const link = document.createElement("a");
+                link.download = "cyanos.bin";
+                link.href = URL.createObjectURL(
+                    new Blob([state], {type: "application/octet-stream"})
+                );
+                link.click();
+                URL.revokeObjectURL(link.href);
+            }
+            if (e.ctrlKey && e.shiftKey && e.code === "KeyL") {
+                e.preventDefault();
+                document.getElementById("load").click();
+            }
+            if (e.ctrlKey && e.shiftKey && e.code === "KeyF") {
+                e.preventDefault();
+                if (!emulator) return;
+                const insert = confirm("Press OK to insert a Floppy Disk or press Cancel to eject.");
+                if (insert) {
+                    document.getElementById("floppy").click();
+                } else {
+                    emulator.eject_fda();
+                }
+            }
+        });
+
+        document.getElementById("load").onchange = function() {
+            if (!this.files.length || !emulator) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                emulator.stop();
+                await emulator.restore_state(e.target.result);
+                emulator.run();
+            };
+            reader.readAsArrayBuffer(this.files[0]);
+            this.value = "";
+        };
+
+        document.getElementById("floppy").onchange = function() {
+            if (!emulator) return;
+            if (!this.files.length) {
+                emulator.set_fda(null);
+                this.value = "";
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                emulator.set_fda({
+                    buffer: e.target.result
+                });
+            };
+            reader.readAsArrayBuffer(this.files[0]);
+            this.value = "";
+        };
+
+        s.onclick = () => {
+            s.focus();
+            if (document.pointerLockElement !== s) {
+                s.requestPointerLock();
+            }
+        };
+    </script>
+</body>
+</html>

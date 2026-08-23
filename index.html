@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CyanOS</title>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://unpkg.com/98.css">
+<style>
+html,body{height:100%;margin:0;zoom:120%;overflow:hidden;user-select:none}
+body{background:#008080;background-image:url("dance.gif");display:flex;justify-content:center;align-items:flex-start;padding-top:30px}
+.window{width:800px}
+.window-body{font-size:12px}
+.columns{display:flex;gap:8px;margin-top:24px;}
+.os{flex:1}
+h1{font-size:22px;margin:2px 0 8px}
+p{margin:6px 0}
+ul{margin:6px 0;padding-left:20px}
+.status{display:inline-block;background:#000080;color:#fff;padding:2px 5px;font-weight:bold;margin-bottom:6px}
+.coming{background:#808080}
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="title-bar">
+    <div class="title-bar-text">CyanOS</div>
+    <div class="title-bar-controls">
+      <button aria-label="Minimize"></button>
+      <button aria-label="Maximize"></button>
+      <button aria-label="Close"></button>
+    </div>
+  </div>
+  <div class="window-body">
+    <p style="text-align:center">
+        <b>CyanOS is a modified copy of the old Windows OS designed to be slightly better, faster and be tiny in size!</b>
+    </p>
+    <div class="columns">
+      <fieldset class="os">
+        <legend><b>CyanOS</b></legend>
+        <p>A modified version of <b>Windows 3.1</b> made to be tiny!</p>
+        <ul>
+          <li>Custom Win9x-like shell included!</li>
+          <li>Heavily customized OS.</li>
+          <li>Comes in different editions.</li>
+          <li>Comes in less then half the actual size of a normal Win3x installation.</li>
+        </ul>
+        <p>(NOTE: These disk images are raw .img shrunk down from 256MB in size)</p>
+        <p><button onclick="location.href='run.html'">Run CyanOS in the Browser!</button></p>
+        <hr>
+        <b>Standard Edition</b>
+        <p>CyanOS with all the basic applications you need!</p>
+        <p><button onclick="location.href='cyanos1/v0/standard.zip'">v0/standard.zip - 10MB</button></p>
+        <hr>
+        <b>Lite Edition</b>
+        <p>The full CyanOS experience for you to setup everything on your own.</p>
+        <p><button onclick="location.href='cyanos1/v0/lite.zip'">v0/lite.zip - 2.8MB</button></p>
+        <hr>
+        <b>Core Edition</b>
+        <p>Base system all setup for you to create yourself from scratch!</p>
+        <p><button onclick="location.href='cyanos1/v0/core.zip'">v0/core.zip - 1.1MB</button></p>
+      </fieldset>
+      <fieldset class="os">
+        <legend><b>CyanOSII</b></legend>
+        <div class="status coming">COMING SOON</div>
+        <p><b>A Windows 9x based CyanOS.</b></p>
+      </fieldset>
+    </div>
+  </div>
+</div>
+</body>
+</html>
